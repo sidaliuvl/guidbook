@@ -1,9 +1,11 @@
 // Anya Project Guidebook Script
-// Version: 1.0.0
+// Version: 2.0.0 - Enhanced with Media Support
 
 document.addEventListener('DOMContentLoaded', () => {
     
     let bookPages = [], activeCategory = '', currentBookType = 'warga', quill;
+    let currentMediaType = 'image';
+    let canEdit = false;
 
     const ipadFrame = document.querySelector('.ipad-frame');
     const viewModeWrapper = document.querySelector('.view-mode-wrapper');
@@ -26,11 +28,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmRemoveButton = document.getElementById('confirm-remove-button');
     const modalCancelButtons = document.querySelectorAll('.modal-cancel-button');
 
+    // Media elements
+    const mediaModal = document.getElementById('media-modal');
+    const mediaModalTitle = document.getElementById('media-modal-title');
+    const mediaUrlInput = document.getElementById('media-url-input');
+    const mediaAltInput = document.getElementById('media-alt-input');
+    const mediaPositionModal = document.getElementById('media-position-modal');
+    const mediaSizeModal = document.getElementById('media-size-modal');
+    const mediaPreview = document.getElementById('media-preview');
+    const mediaPreviewContent = document.getElementById('media-preview-content');
+    const insertMediaConfirm = document.getElementById('insert-media-confirm');
+    const previewMediaBtn = document.getElementById('preview-media-btn');
+
+    // Toolbar elements
+    const insertImageBtn = document.getElementById('insert-image-btn');
+    const insertVideoBtn = document.getElementById('insert-video-btn');
+    const insertYoutubeBtn = document.getElementById('insert-youtube-btn');
+    const mediaPositionSelect = document.getElementById('media-position-select');
+    const mediaSizeSelect = document.getElementById('media-size-select');
+
     
     function initializeQuill() {
         quill = new Quill('#editor', {
             theme: 'snow',
-            modules: { toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], [{ 'color': [] }, { 'background': [] }], ['link'], ['clean']] }
+            modules: { 
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }], 
+                    ['bold', 'italic', 'underline', 'strike'], 
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }], 
+                    [{ 'color': [] }, { 'background': [] }], 
+                    ['link'], 
+                    ['clean']
+                ] 
+            }
         });
     }
     initializeQuill();
@@ -47,6 +77,54 @@ document.addEventListener('DOMContentLoaded', () => {
             return `<s>${trimmedCategoryName}</s>`;
         });
     }
+
+    function processMediaContent(content) {
+        // Process images
+        content = content.replace(/\[IMG:(.*?)\|(.*?)\|(.*?)\|(.*?)\]/g, (match, url, alt, position, size) => {
+            const altText = alt || 'صورة';
+            const positionClass = `media-${position}`;
+            const sizeClass = `media-${size}`;
+            return `<div class="media-container ${positionClass} ${sizeClass}">
+                        <img src="${url}" alt="${altText}" loading="lazy" onerror="this.style.display='none'">
+                    </div>`;
+        });
+
+        // Process videos
+        content = content.replace(/\[VIDEO:(.*?)\|(.*?)\|(.*?)\|(.*?)\]/g, (match, url, alt, position, size) => {
+            const altText = alt || 'فيديو';
+            const positionClass = `media-${position}`;
+            const sizeClass = `media-${size}`;
+            return `<div class="media-container ${positionClass} ${sizeClass}">
+                        <video controls preload="metadata" title="${altText}">
+                            <source src="${url}" type="video/mp4">
+                            متصفحك لا يدعم تشغيل الفيديو.
+                        </video>
+                    </div>`;
+        });
+
+        // Process YouTube videos
+        content = content.replace(/\[YOUTUBE:(.*?)\|(.*?)\|(.*?)\|(.*?)\]/g, (match, url, alt, position, size) => {
+            const altText = alt || 'فيديو يوتيوب';
+            const positionClass = `media-${position}`;
+            const sizeClass = `media-${size}`;
+            let embedUrl = url;
+            
+            // Convert YouTube URL to embed format
+            if (url.includes('youtube.com/watch?v=')) {
+                const videoId = url.split('v=')[1].split('&')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1].split('?')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            }
+            
+            return `<div class="media-container ${positionClass} ${sizeClass}">
+                        <iframe src="${embedUrl}" title="${altText}" allowfullscreen></iframe>
+                    </div>`;
+        });
+
+        return content;
+    }
     
     function renderNavMenu() {
         navMenu.innerHTML = '';
@@ -58,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (page.category.toLowerCase().includes('rules')) iconClass = 'fa-solid fa-gavel';
             if (page.category.toLowerCase().includes('hotkeys')) iconClass = 'fa-solid fa-keyboard';
             if (page.category.toLowerCase().includes('tutorial')) iconClass = 'fa-solid fa-graduation-cap';
+            if (page.category.toLowerCase().includes('jobs')) iconClass = 'fa-solid fa-briefcase';
             navItem.innerHTML = `<i class="${iconClass}"></i> ${page.category}`;
             navItem.addEventListener('click', () => renderContent(page.category));
             navMenu.appendChild(navItem);
@@ -68,12 +147,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const page = bookPages.find(p => p.category.toLowerCase() === categoryName.toLowerCase());
         if (page) {
             document.getElementById('content-title-view').innerText = page.category;
-            contentBodyView.innerHTML = processInternalLinks(page.content);
+            let processedContent = processInternalLinks(page.content);
+            processedContent = processMediaContent(processedContent);
+            contentBodyView.innerHTML = processedContent + '<div class="clearfix"></div>';
+            
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.toggle('active', item.dataset.category.toLowerCase() === categoryName.toLowerCase());
             });
             activeCategory = page.category;
-            removeCategoryButton.disabled = false;
+            if (removeCategoryButton) {
+                removeCategoryButton.disabled = false;
+            }
         }
     }
     
@@ -121,17 +205,16 @@ document.addEventListener('DOMContentLoaded', () => {
             searchResultsContainer.innerHTML = `<p class="edit-info">No results found for "${query}".</p>`;
         }
     }
-   
 
     function switchToEditMode() {
+        if (!canEdit) return;
         const currentPage = bookPages.find(p => p.category === activeCategory);
         if (!currentPage && bookPages.length > 0) return;
         document.getElementById('editing-category-title').innerText = currentPage ? `Editing: ${currentPage.category}` : 'Add First Category';
-        quill.root.innerHTML = currentPage ? currentPage.content : '<p>Mulai tulis di sini...</p>';
+        quill.root.innerHTML = currentPage ? currentPage.content : '<p>ابدأ الكتابة هنا...</p>';
         viewModeWrapper.style.display = 'none';
         editModeWrapper.style.display = 'flex';
     }
-  
 
     function switchToViewMode(newCategoryToShow = null) {
         if (newCategoryToShow) renderContent(newCategoryToShow);
@@ -151,9 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     }
 
-   
-
     function saveContent() {
+        if (!canEdit) return;
         const newContent = quill.root.innerHTML;
         const currentPage = bookPages.find(p => p.category === activeCategory);
         if (!currentPage) { switchToViewMode(); return; }
@@ -162,14 +244,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then(resp => resp.json()).then(response => {
             if (response.success) {
                 currentPage.content = newContent;
-                document.getElementById('content-body-view').innerHTML = newContent;
                 switchToViewMode(currentPage.category);
             }
         });
     }
 
-
     function confirmAddCategory() {
+        if (!canEdit) return;
         const categoryName = newCategoryInput.value;
         if (categoryName && categoryName.trim() !== "") {
             fetch(`https://ap_guidebook/addCategory`, {
@@ -187,8 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
         newCategoryInput.value = '';
     }
 
-
     function confirmRemoveCategory() {
+        if (!canEdit) return;
         const currentPage = bookPages.find(p => p.category === activeCategory);
         if (!currentPage) return;
         fetch(`https://ap_guidebook/removeCategory`, {
@@ -201,10 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (nextCategory) {
                     renderContent(nextCategory);
                 } else {
-                    document.getElementById('content-title-view').innerText = "Buku Kosong";
-                    document.getElementById('content-body-view').innerHTML = "<p>Buku ini masih kosong...</p>";
+                    document.getElementById('content-title-view').innerText = "كتاب فارغ";
+                    document.getElementById('content-body-view').innerHTML = "<p>هذا الكتاب فارغ...</p>";
                     activeCategory = null;
-                    removeCategoryButton.disabled = true;
+                    if (removeCategoryButton) {
+                        removeCategoryButton.disabled = true;
+                    }
                 }
                 switchToViewMode(nextCategory);
             }
@@ -212,12 +295,116 @@ document.addEventListener('DOMContentLoaded', () => {
         removeCategoryModal.style.display = 'none';
     }
 
+    // Media functions
+    function openMediaModal(mediaType) {
+        if (!canEdit) return;
+        currentMediaType = mediaType;
+        
+        switch(mediaType) {
+            case 'image':
+                mediaModalTitle.textContent = 'إدراج صورة';
+                mediaUrlInput.placeholder = 'https://example.com/image.jpg';
+                break;
+            case 'video':
+                mediaModalTitle.textContent = 'إدراج فيديو';
+                mediaUrlInput.placeholder = 'https://example.com/video.mp4';
+                break;
+            case 'youtube':
+                mediaModalTitle.textContent = 'إدراج فيديو يوتيوب';
+                mediaUrlInput.placeholder = 'https://www.youtube.com/watch?v=...';
+                break;
+        }
+        
+        // Reset form
+        mediaUrlInput.value = '';
+        mediaAltInput.value = '';
+        mediaPositionModal.value = 'center';
+        mediaSizeModal.value = 'medium';
+        mediaPreview.style.display = 'none';
+        
+        mediaModal.style.display = 'flex';
+        mediaUrlInput.focus();
+    }
 
+    function previewMedia() {
+        const url = mediaUrlInput.value.trim();
+        if (!url) return;
+
+        const alt = mediaAltInput.value.trim() || 'معاينة';
+        const position = mediaPositionModal.value;
+        const size = mediaSizeModal.value;
+
+        let previewHTML = '';
+        
+        switch(currentMediaType) {
+            case 'image':
+                previewHTML = `<img src="${url}" alt="${alt}" style="max-width: 100%; max-height: 200px;" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+                              <p style="display: none; color: #e74c3c;">خطأ في تحميل الصورة</p>`;
+                break;
+            case 'video':
+                previewHTML = `<video controls style="max-width: 100%; max-height: 200px;" preload="metadata">
+                                  <source src="${url}" type="video/mp4">
+                                  متصفحك لا يدعم تشغيل الفيديو.
+                               </video>`;
+                break;
+            case 'youtube':
+                let embedUrl = url;
+                if (url.includes('youtube.com/watch?v=')) {
+                    const videoId = url.split('v=')[1].split('&')[0];
+                    embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                } else if (url.includes('youtu.be/')) {
+                    const videoId = url.split('youtu.be/')[1].split('?')[0];
+                    embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                }
+                previewHTML = `<iframe src="${embedUrl}" width="300" height="200" frameborder="0" allowfullscreen></iframe>`;
+                break;
+        }
+
+        mediaPreviewContent.innerHTML = previewHTML;
+        mediaPreview.style.display = 'block';
+    }
+
+    function insertMedia() {
+        if (!canEdit) return;
+        const url = mediaUrlInput.value.trim();
+        if (!url) return;
+
+        const alt = mediaAltInput.value.trim() || '';
+        const position = mediaPositionModal.value;
+        const size = mediaSizeModal.value;
+
+        let mediaCode = '';
+        
+        switch(currentMediaType) {
+            case 'image':
+                mediaCode = `[IMG:${url}|${alt}|${position}|${size}]`;
+                break;
+            case 'video':
+                mediaCode = `[VIDEO:${url}|${alt}|${position}|${size}]`;
+                break;
+            case 'youtube':
+                mediaCode = `[YOUTUBE:${url}|${alt}|${position}|${size}]`;
+                break;
+        }
+
+        // Insert at cursor position in Quill editor
+        const range = quill.getSelection();
+        if (range) {
+            quill.insertText(range.index, '\n' + mediaCode + '\n');
+        } else {
+            quill.insertText(quill.getLength(), '\n' + mediaCode + '\n');
+        }
+
+        mediaModal.style.display = 'none';
+    }
+
+    // Event listeners
     window.addEventListener('message', function(event) {
         const data = event.data;
         if (data.action === 'openBook') {
             bookPages = data.pages;
             currentBookType = data.bookType;
+            canEdit = data.canEdit || false;
             searchInput.value = '';
             handleSearch('');
             renderNavMenu();
@@ -226,47 +413,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 const categoryToStart = data.startCategory && bookPages.find(p => p.category === data.startCategory) ? data.startCategory : bookPages[0].category;
                 renderContent(categoryToStart);
             } else {
-                document.getElementById('content-title-view').innerText = "Buku Kosong";
-                document.getElementById('content-body-view').innerHTML = "<p>Buku ini masih kosong. Admin bisa menambahkan kategori baru di mode edit.</p>";
+                document.getElementById('content-title-view').innerText = "كتاب فارغ";
+                document.getElementById('content-body-view').innerHTML = "<p>هذا الكتاب فارغ. يمكن للمشرف إضافة فئات جديدة في وضع التحرير.</p>";
                 activeCategory = null;
-                removeCategoryButton.disabled = true;
+                if (removeCategoryButton) {
+                    removeCategoryButton.disabled = true;
+                }
             }
 
             document.getElementById('book-title-view').innerText = data.bookTitle || 'GUIDEBOOK';
-            editButton.style.display = data.canEdit ? 'block' : 'none';
+            if (editButton) {
+                editButton.style.display = canEdit ? 'block' : 'none';
+            }
             ipadFrame.style.display = 'block';
             switchToViewMode(activeCategory);
         }
     });
 
-    editButton.addEventListener('click', switchToEditMode);
-    saveButton.addEventListener('click', saveContent);
-    exitEditButton.addEventListener('click', () => switchToViewMode(activeCategory));
-    closeButton.addEventListener('click', closeBook);
+    if (editButton) {
+        editButton.addEventListener('click', switchToEditMode);
+    }
+    if (saveButton) {
+        saveButton.addEventListener('click', saveContent);
+    }
+    if (exitEditButton) {
+        exitEditButton.addEventListener('click', () => switchToViewMode(activeCategory));
+    }
+    if (closeButton) {
+        closeButton.addEventListener('click', closeBook);
+    }
 
-    addCategoryButton.addEventListener('click', () => {
-        if (addCategoryModal) {
-            addCategoryModal.style.display = 'flex';
-            if (newCategoryInput) {
-                newCategoryInput.focus();
+    if (addCategoryButton) {
+        addCategoryButton.addEventListener('click', () => {
+            if (!canEdit) return;
+            if (addCategoryModal) {
+                addCategoryModal.style.display = 'flex';
+                if (newCategoryInput) {
+                    newCategoryInput.focus();
+                }
             }
-        }
-    });
+        });
+    }
 
-    removeCategoryButton.addEventListener('click', () => {
-        const currentPage = bookPages.find(p => p.category === activeCategory);
-        if (!currentPage) return;
-        if (removeConfirmText) {
-            removeConfirmText.innerText = `Anda yakin ingin menghapus kategori "${currentPage.category}"? Tindakan ini tidak bisa dibatalkan.`;
-        }
-        if (removeCategoryModal) {
-            removeCategoryModal.style.display = 'flex';
-        }
-    });
+    if (removeCategoryButton) {
+        removeCategoryButton.addEventListener('click', () => {
+            if (!canEdit) return;
+            const currentPage = bookPages.find(p => p.category === activeCategory);
+            if (!currentPage) return;
+            if (removeConfirmText) {
+                removeConfirmText.innerText = `هل أنت متأكد من حذف فئة "${currentPage.category}"؟ لا يمكن التراجع عن هذا الإجراء.`;
+            }
+            if (removeCategoryModal) {
+                removeCategoryModal.style.display = 'flex';
+            }
+        });
+    }
 
-    searchInput.addEventListener('input', () => {
-        handleSearch(searchInput.value);
-    });
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            handleSearch(searchInput.value);
+        });
+    }
 
     if (confirmAddButton) {
         confirmAddButton.addEventListener('click', confirmAddCategory);
@@ -279,6 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 if(addCategoryModal) addCategoryModal.style.display = 'none';
                 if(removeCategoryModal) removeCategoryModal.style.display = 'none';
+                if(mediaModal) mediaModal.style.display = 'none';
             });
         });
     }
@@ -288,14 +496,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    contentBodyView.addEventListener('click', function(event) {
-        const link = event.target.closest('.internal-link');
-        if (link) {
-            event.preventDefault();
-            const targetCategory = link.dataset.linkCategory;
-            if (targetCategory) {
-                renderContent(targetCategory);
+    // Media event listeners
+    if (insertImageBtn) {
+        insertImageBtn.addEventListener('click', () => openMediaModal('image'));
+    }
+    if (insertVideoBtn) {
+        insertVideoBtn.addEventListener('click', () => openMediaModal('video'));
+    }
+    if (insertYoutubeBtn) {
+        insertYoutubeBtn.addEventListener('click', () => openMediaModal('youtube'));
+    }
+    if (previewMediaBtn) {
+        previewMediaBtn.addEventListener('click', previewMedia);
+    }
+    if (insertMediaConfirm) {
+        insertMediaConfirm.addEventListener('click', insertMedia);
+    }
+
+    if (contentBodyView) {
+        contentBodyView.addEventListener('click', function(event) {
+            const link = event.target.closest('.internal-link');
+            if (link) {
+                event.preventDefault();
+                const targetCategory = link.dataset.linkCategory;
+                if (targetCategory) {
+                    renderContent(targetCategory);
+                }
             }
-        }
-    });
+        });
+    }
+
+    // URL input preview on change
+    if (mediaUrlInput) {
+        mediaUrlInput.addEventListener('input', () => {
+            if (mediaUrlInput.value.trim()) {
+                previewMedia();
+            } else {
+                mediaPreview.style.display = 'none';
+            }
+        });
+    }
 });
