@@ -3,217 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DzCrew GuideBook</title>
+    <title>DzCrew GuideBook - Professional Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="ipad-frame">
-        <!-- Header Bar -->
-        <div class="header-bar">
-            <div class="header-title">DzCrew Guide Book</div>
-            <div class="header-subtitle">Advanced System</div>
-            <div class="header-actions">
-                <button id="edit-button" class="header-btn edit" style="display: none;">
-                    <i class="fas fa-edit"></i> Edit Mode
-                </button>
-                <button id="close-button-view" class="header-btn close">
-                    <i class="fas fa-times"></i> Close
-                </button>
+    <div class="guidebook-container" id="guidebook-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-brand">
+                    <div class="header-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div>
+                        <div class="header-title">DzCrew GuideBook</div>
+                        <div class="header-subtitle">Professional Edition</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="edit-mode-btn" class="header-btn edit" style="display: none;">
+                        <i class="fas fa-edit"></i>
+                        Edit Mode
+                    </button>
+                    <button id="close-btn" class="header-btn close">
+                        <i class="fas fa-times"></i>
+                        Close
+                    </button>
+                </div>
             </div>
-        </div>
+        </header>
 
-        <div class="main-container">
+        <!-- Main Layout -->
+        <div class="main-layout">
             <!-- View Mode -->
-            <div class="view-mode-wrapper">
-                <div class="sidebar">
-                    <!-- Search -->
-                    <div class="search-container">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="search-input" placeholder="Search content...">
+            <div class="view-mode" id="view-mode">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="search-container">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="search-input" placeholder="Search content...">
+                        </div>
                     </div>
-
-                    <!-- Navigation Menu -->
-                    <div class="nav-section">
-                        <div class="section-title">Navigation</div>
-                        <div class="nav-menu" id="nav-menu-view"></div>
-                    </div>
+                    
+                    <nav class="navigation" id="navigation">
+                        <div class="nav-section">
+                            <div class="nav-section-title">Categories</div>
+                            <div class="nav-items" id="nav-items"></div>
+                        </div>
+                    </nav>
 
                     <!-- Search Results -->
-                    <div class="search-results" id="search-results" style="display: none;"></div>
-                </div>
+                    <div class="search-results hidden" id="search-results"></div>
+                </aside>
 
-                <div class="content-area">
-                    <!-- Welcome Banner -->
-                    <div class="welcome-banner" id="welcome-banner">
-                        <div class="welcome-title">Welcome to<br>DzCrew GuideBook</div>
-                        <div class="welcome-subtitle">Your comprehensive guide to the server</div>
-                    </div>
-
-                    <!-- Content -->
+                <!-- Content Area -->
+                <main class="content-area">
                     <div class="content-header">
-                        <h2 id="content-title-view">Getting Started</h2>
+                        <h1 class="content-title" id="content-title">Welcome to DzCrew</h1>
+                        <p class="content-subtitle" id="content-subtitle">Your comprehensive server guide</p>
                     </div>
-                    <div class="content-body" id="content-body-view">
-                        <p>Welcome to DzCrew Role-Play Server! This comprehensive guide will help you navigate through all aspects of our server.</p>
-                        <p>Use the navigation menu on the left to explore different sections and find the information you need.</p>
+                    <div class="content-body" id="content-body">
+                        <div class="welcome-banner" id="welcome-banner">
+                            <h2 class="welcome-title">Welcome to DzCrew GuideBook</h2>
+                            <p class="welcome-description">Your comprehensive guide to navigating and mastering our roleplay server. Explore different categories to learn about jobs, rules, maps, and much more.</p>
+                        </div>
+                        <div id="dynamic-content">
+                            <p>Select a category from the sidebar to begin exploring our comprehensive guide system.</p>
+                        </div>
                     </div>
-                </div>
+                </main>
             </div>
 
             <!-- Edit Mode -->
-            <div class="edit-mode-wrapper" style="display: none;">
-                <div class="sidebar">
-                    <div class="edit-header-title">
-                        <h1><i class="fas fa-edit"></i> EDITING MODE</h1>
-                        <div class="category-actions">
-                            <button id="add-category-button" class="category-action-btn add" title="Add New Category">
-                                <i class="fa-solid fa-plus"></i>
-                            </button>
-                            <button id="remove-category-button" class="category-action-btn remove" title="Remove Current Category">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
+            <div class="edit-mode" id="edit-mode">
+                <!-- Edit Sidebar -->
+                <aside class="edit-sidebar">
+                    <div class="edit-header">
+                        <div class="edit-title">
+                            <i class="fas fa-edit"></i>
+                            Admin Editor
+                        </div>
+                        <div class="edit-subtitle">Professional Content Management</div>
+                    </div>
+
+                    <div class="edit-controls">
+                        <div class="control-group">
+                            <label class="control-label">
+                                <i class="fas fa-folder"></i>
+                                Category Management
+                            </label>
+                            <div class="control-buttons">
+                                <button class="control-btn" id="add-category-btn">
+                                    <i class="fas fa-plus"></i>
+                                    Add Category
+                                </button>
+                                <button class="control-btn" id="delete-category-btn">
+                                    <i class="fas fa-trash"></i>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <i class="fas fa-image"></i>
+                                Media Tools
+                            </label>
+                            <div class="control-buttons">
+                                <button class="control-btn" id="insert-image-btn">
+                                    <i class="fas fa-image"></i>
+                                    Image
+                                </button>
+                                <button class="control-btn" id="insert-video-btn">
+                                    <i class="fas fa-video"></i>
+                                    Video
+                                </button>
+                                <button class="control-btn" id="insert-youtube-btn">
+                                    <i class="fab fa-youtube"></i>
+                                    YouTube
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">
+                                <i class="fas fa-link"></i>
+                                Internal Links
+                            </label>
+                            <div class="control-buttons">
+                                <button class="control-btn" id="insert-link-btn">
+                                    <i class="fas fa-link"></i>
+                                    Add Link
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Media Layout</label>
+                            <select class="control-select" id="media-position">
+                                <option value="center">Center</option>
+                                <option value="left">Float Left</option>
+                                <option value="right">Float Right</option>
+                                <option value="full">Full Width</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">Media Size</label>
+                            <select class="control-select" id="media-size">
+                                <option value="medium">Medium</option>
+                                <option value="small">Small</option>
+                                <option value="large">Large</option>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div class="nav-section">
-                        <p id="editing-category-title" style="color: #ff6b35; font-weight: 500; padding: 0 20px;">Editing: Welcome</p>
-                    </div>
-                    
-                    <div class="edit-info">
-                        <i class="fas fa-info-circle"></i> You are currently in edit mode. Save your changes or exit to navigate between categories.
-                    </div>
 
-                    <div style="margin-top: auto; padding: 0 20px;">
-                        <button id="save-button" class="action-button save" style="width: 100%; margin-bottom: 10px;">
-                            <i class="fas fa-save"></i> Save Changes
+                    <div class="edit-actions">
+                        <button class="action-btn primary" id="save-btn">
+                            <i class="fas fa-save"></i>
+                            Save Changes
                         </button>
-                        <button id="exit-edit-button" class="action-button close" style="width: 100%;">
-                            <i class="fas fa-times"></i> Exit Without Saving
+                        <button class="action-btn secondary" id="preview-btn">
+                            <i class="fas fa-eye"></i>
+                            Preview
+                        </button>
+                        <button class="action-btn danger" id="exit-edit-btn">
+                            <i class="fas fa-times"></i>
+                            Exit Editor
                         </button>
                     </div>
-                </div>
+                </aside>
 
-                <div class="editor-area">
+                <!-- Editor Area -->
+                <main class="editor-area">
                     <div class="editor-toolbar">
-                        <div class="toolbar-section">
-                            <h4><i class="fa-solid fa-image"></i> Insert Media</h4>
-                            <div class="toolbar-group">
-                                <button id="insert-image-btn" class="toolbar-button">
-                                    <i class="fa-solid fa-image"></i> Image
-                                </button>
-                                <button id="insert-video-btn" class="toolbar-button">
-                                    <i class="fa-solid fa-video"></i> Video
-                                </button>
-                                <button id="insert-youtube-btn" class="toolbar-button">
-                                    <i class="fa-brands fa-youtube"></i> YouTube
-                                </button>
-                            </div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="bold-btn" title="Bold">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button class="toolbar-btn" id="italic-btn" title="Italic">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button class="toolbar-btn" id="underline-btn" title="Underline">
+                                <i class="fas fa-underline"></i>
+                            </button>
                         </div>
-                        <div class="toolbar-section">
-                            <h4><i class="fa-solid fa-layout"></i> Media Layout</h4>
-                            <div class="toolbar-group">
-                                <select id="media-position-select" class="toolbar-select">
-                                    <option value="center">Center</option>
-                                    <option value="left">Left</option>
-                                    <option value="right">Right</option>
-                                    <option value="full">Full Width</option>
-                                </select>
-                                <select id="media-size-select" class="toolbar-select">
-                                    <option value="medium">Medium</option>
-                                    <option value="small">Small</option>
-                                    <option value="large">Large</option>
-                                </select>
-                            </div>
+                        
+                        <div class="toolbar-separator"></div>
+                        
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="h1-btn" title="Heading 1">H1</button>
+                            <button class="toolbar-btn" id="h2-btn" title="Heading 2">H2</button>
+                            <button class="toolbar-btn" id="h3-btn" title="Heading 3">H3</button>
+                        </div>
+                        
+                        <div class="toolbar-separator"></div>
+                        
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="list-btn" title="Bullet List">
+                                <i class="fas fa-list-ul"></i>
+                            </button>
+                            <button class="toolbar-btn" id="ordered-list-btn" title="Numbered List">
+                                <i class="fas fa-list-ol"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="toolbar-separator"></div>
+                        
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" id="align-left-btn" title="Align Left">
+                                <i class="fas fa-align-left"></i>
+                            </button>
+                            <button class="toolbar-btn" id="align-center-btn" title="Align Center">
+                                <i class="fas fa-align-center"></i>
+                            </button>
+                            <button class="toolbar-btn" id="align-right-btn" title="Align Right">
+                                <i class="fas fa-align-right"></i>
+                            </button>
                         </div>
                     </div>
-                    <div id="editor"></div>
+                    
+                    <div class="editor-container">
+                        <div id="editor"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal-overlay hidden" id="add-category-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Add New Category
+                </h2>
+                <p class="modal-description">Create a new category for your guidebook content.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="category-name">Category Name</label>
+                    <input type="text" class="form-input" id="category-name" placeholder="Enter category name...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="category-icon">Icon (Font Awesome class)</label>
+                    <input type="text" class="form-input" id="category-icon" placeholder="fas fa-briefcase" value="fas fa-folder">
                 </div>
             </div>
-        </div>
-    </div>
-    
-    <!-- Media Insert Modal -->
-    <div id="media-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2 id="media-modal-title"><i class="fas fa-image"></i> Insert Media</h2>
-            <div class="media-form-group">
-                <label for="media-url-input">Media URL:</label>
-                <input type="url" id="media-url-input" placeholder="https://example.com/image.jpg">
-            </div>
-            <div class="media-form-group">
-                <label for="media-alt-input">Alt Text (Optional):</label>
-                <input type="text" id="media-alt-input" placeholder="Description of the image or video">
-            </div>
-            <div class="media-form-group">
-                <label for="media-position-modal">Position:</label>
-                <select id="media-position-modal">
-                    <option value="center">Center</option>
-                    <option value="left">Left</option>
-                    <option value="right">Right</option>
-                    <option value="full">Full Width</option>
-                </select>
-            </div>
-            <div class="media-form-group">
-                <label for="media-size-modal">Size:</label>
-                <select id="media-size-modal">
-                    <option value="medium">Medium</option>
-                    <option value="small">Small</option>
-                    <option value="large">Large</option>
-                </select>
-            </div>
-            <div id="media-preview" class="media-preview" style="display: none;">
-                <p><i class="fas fa-eye"></i> Preview:</p>
-                <div id="media-preview-content"></div>
-            </div>
             <div class="modal-actions">
-                <button id="insert-media-confirm" class="action-button save">
-                    <i class="fas fa-plus"></i> Insert
+                <button class="modal-btn primary" id="confirm-add-category">
+                    <i class="fas fa-check"></i>
+                    Create Category
                 </button>
-                <button id="preview-media-btn" class="action-button edit">
-                    <i class="fas fa-eye"></i> Preview
-                </button>
-                <button class="modal-cancel-button action-button close">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Add Category Modal -->
-    <div id="add-category-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2><i class="fas fa-plus"></i> Add New Category</h2>
-            <p>Please enter a name for the new category.</p>
-            <input type="text" id="new-category-input" placeholder="Category Name...">
-            <div class="modal-actions">
-                <button id="confirm-add-button" class="action-button save">
-                    <i class="fas fa-check"></i> Confirm
-                </button>
-                <button class="modal-cancel-button action-button close">
-                    <i class="fas fa-times"></i> Cancel
+                <button class="modal-btn secondary" id="cancel-add-category">
+                    <i class="fas fa-times"></i>
+                    Cancel
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Remove Category Modal -->
-    <div id="remove-category-modal" class="modal-overlay" style="display: none;">
+    <!-- Delete Category Modal -->
+    <div class="modal-overlay hidden" id="delete-category-modal">
         <div class="modal-content">
-            <h2><i class="fas fa-exclamation-triangle"></i> Confirm Deletion</h2>
-            <p id="remove-confirm-text">Are you sure you want to delete this category?</p>
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--error-color);"></i>
+                    Delete Category
+                </h2>
+                <p class="modal-description" id="delete-category-text">Are you sure you want to delete this category? This action cannot be undone.</p>
+            </div>
             <div class="modal-actions">
-                <button id="confirm-remove-button" class="action-button save">
-                    <i class="fas fa-check"></i> Yes, Delete
+                <button class="modal-btn danger" id="confirm-delete-category">
+                    <i class="fas fa-trash"></i>
+                    Delete Category
                 </button>
-                <button class="modal-cancel-button action-button close">
-                    <i class="fas fa-times"></i> Cancel
+                <button class="modal-btn secondary" id="cancel-delete-category">
+                    <i class="fas fa-times"></i>
+                    Cancel
                 </button>
             </div>
         </div>
     </div>
-    
+
+    <!-- Media Insert Modal -->
+    <div class="modal-overlay hidden" id="media-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="media-modal-title">
+                    <i class="fas fa-image"></i>
+                    Insert Media
+                </h2>
+                <p class="modal-description">Add images, videos, or YouTube content to your page.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="media-url">Media URL</label>
+                    <input type="url" class="form-input" id="media-url" placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="media-alt">Alt Text / Description</label>
+                    <input type="text" class="form-input" id="media-alt" placeholder="Describe the media content...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="media-position-modal">Position</label>
+                    <select class="form-select" id="media-position-modal">
+                        <option value="center">Center</option>
+                        <option value="left">Float Left</option>
+                        <option value="right">Float Right</option>
+                        <option value="full">Full Width</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="media-size-modal">Size</label>
+                    <select class="form-select" id="media-size-modal">
+                        <option value="medium">Medium</option>
+                        <option value="small">Small</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="media-preview-container">
+                    <label class="form-label">Preview</label>
+                    <div id="media-preview" style="padding: 16px; background: var(--background-primary); border-radius: var(--radius-md); text-align: center;"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn primary" id="insert-media-btn">
+                    <i class="fas fa-plus"></i>
+                    Insert Media
+                </button>
+                <button class="modal-btn secondary" id="preview-media-btn">
+                    <i class="fas fa-eye"></i>
+                    Preview
+                </button>
+                <button class="modal-btn secondary" id="cancel-media-btn">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Internal Link Modal -->
+    <div class="modal-overlay hidden" id="link-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-link"></i>
+                    Insert Internal Link
+                </h2>
+                <p class="modal-description">Create a link to another category in your guidebook.</p>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="link-text">Link Text</label>
+                    <input type="text" class="form-input" id="link-text" placeholder="Click here to view...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="link-target">Target Category</label>
+                    <select class="form-select" id="link-target">
+                        <option value="">Select a category...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn primary" id="insert-link-confirm">
+                    <i class="fas fa-link"></i>
+                    Insert Link
+                </button>
+                <button class="modal-btn secondary" id="cancel-link-btn">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="script.js"></script>
 </body>
